@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تحليل أداء السوق السعودي</title>
+    
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+    
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            padding: 20px;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.05);
+            margin-top: 20px;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 30px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .last-update {
+            text-align: center;
+            color: #6c757d;
+            margin-bottom: 20px;
+        }
+        table.dataTable thead th {
+            background-color: #2c3e50;
+            color: white;
+        }
+        .positive {
+            color: green;
+            font-weight: bold;
+        }
+        .negative {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>تحليل القوة النسبية - السوق السعودي</h1>
+        <p class="last-update" id="lastUpdate">جاري تحميل البيانات...</p>
+        
+        <div class="table-responsive">
+            <table id="analysisTable" class="table table-striped table-hover" style="width:100%">
+                <thead>
+                    <!-- Headers will be populated dynamically -->
+                </thead>
+                <tbody>
+                    <!-- Body will be populated dynamically -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- PapaParse -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            // Path to your CSV file
+            const csvFilePath = 'saudiexchange_rs_analysis.csv';
+
+            Papa.parse(csvFilePath, {
+                download: true,
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    const data = results.data;
+                    const meta = results.meta;
+                    
+                    if (data.length === 0) {
+                        $('#lastUpdate').text('لا توجد بيانات للعرض');
+                        return;
+                    }
+
+                    // Update timestamp (simulation, real timestamp would come from file metadata or content)
+                    const now = new Date();
+                    $('#lastUpdate').text('آخر تحديث: ' + now.toLocaleDateString('ar-SA') + ' ' + now.toLocaleTimeString('ar-SA'));
+
+                    // Generate Table Headers
+                    const headers = meta.fields;
+                    let headerHtml = '<tr>';
+                    headers.forEach(h => {
+                        headerHtml += `<th>${h}</th>`;
+                    });
+                    headerHtml += '</tr>';
+                    $('#analysisTable thead').html(headerHtml);
+
+                    // Initialize DataTable
+                    $('#analysisTable').DataTable({
+                        data: data,
+                        columns: headers.map(h => ({ data: h })),
+                        language: {
+                            url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/ar.json'
+                        },
+                        order: [[headers.length - 1, 'desc']], // Sort by last column (RS) by default
+                        pageLength: 25,
+                        createdRow: function(row, data, dataIndex) {
+                            // Example: Color code RS column if > 80
+                            const rsVal = parseFloat(data['RS']);
+                            if (rsVal >= 90) {
+                                $('td', row).last().addClass('positive');
+                            } else if (rsVal <= 30) {
+                                $('td', row).last().addClass('negative');
+                            }
+                        }
+                    });
+                },
+                error: function(err) {
+                    console.error('Error parsing CSV:', err);
+                    $('#lastUpdate').text('حدث خطأ أثناء تحميل البيانات');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
