@@ -67,26 +67,8 @@ def calculate_rs_metrics_from_csv(input_csv: str, output_path: str) -> None:
     df_pivot[output_cols].to_csv(output_path, encoding="utf-8-sig")
     print(f"[analysis] saved RS analysis to {output_path}")
 
-    # Save as Tab Separated (TSV)
-    tsv_path = output_path.replace(".csv", ".tsv")
-    df_pivot[output_cols].to_csv(tsv_path, sep='\t', encoding="utf-8-sig")
-    print(f"[analysis] saved TSV analysis to {tsv_path} (Best for copy-paste)")
 
-    # Save as Aligned Text Table
-    txt_path = output_path.replace(".csv", ".txt")
-    with open(txt_path, "w", encoding="utf-8-sig") as f:
-        f.write(df_pivot[output_cols].to_string())
-    print(f"[analysis] saved aligned text analysis to {txt_path}")
-    
-    # Try saving as Excel (.xlsx)
-    try:
-        xlsx_path = output_path.replace(".csv", ".xlsx")
-        df_pivot[output_cols].to_excel(xlsx_path)
-        print(f"[analysis] saved Excel analysis to {xlsx_path}")
-    except ImportError:
-        print("[warn] openpyxl not installed, skipping Excel save")
-    except Exception as e:
-        print(f"[warn] could not save Excel file: {e}")
+
 
 if __name__ == "__main__":
     calculate_rs_metrics_from_csv("saudiexchange_results.csv", "saudiexchange_rs_analysis.csv")
